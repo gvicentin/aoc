@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "minunit.h"
 
@@ -71,22 +70,14 @@ void calculateTop3Calories(FILE *stream, unsigned int *top3) {
 
 static char *testGetTop3Calories(void) {
     FILE *tempFile;
+    unsigned int top3[3] = {0};
     char *testInput =
         "1000\n2000\n3000\n\n4000\n\n5000\n"
         "6000\n\n7000\n8000\n9000\n\n10000\n";
 
-    tempFile = fopen("/tmp/day1_test.in", "w+");
-    if (tempFile == NULL) {
-        fprintf(stderr, "Failed to create temp file\n");
-        exit(1);
-    }
+    tempFile = muTempFile("/tmp/day1_test.in", testInput);
 
-    fwrite(testInput, sizeof(testInput[0]), strlen(testInput), tempFile);
-    rewind(tempFile);
-
-    unsigned int top3[3] = {0};
     calculateTop3Calories(tempFile, top3);
-
     MU_ASSERT_FMT(24000 == top3[0], "Top 1 calories should be %u, but got %u", 24000,
                   top3[0]);
     MU_ASSERT_FMT(45000 == top3[0] + top3[1] + top3[2],
