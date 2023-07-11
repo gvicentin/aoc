@@ -87,7 +87,7 @@ static char *testGetTop3Calories(void) {
     unsigned int top3[3] = {0};
     calculateTop3Calories(tempFile, top3);
 
-    MU_ASSERT_FMT(24000 == top3[0], "Top 1 calories should be %u, but got %u", 2400,
+    MU_ASSERT_FMT(24000 == top3[0], "Top 1 calories should be %u, but got %u", 24000,
                   top3[0]);
     MU_ASSERT_FMT(45000 == top3[0] + top3[1] + top3[2],
                   "Top 3 calories total should be %u, but got %u", 45000,
