@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "minunit.h"
 
 #define SHAPE_COUNT 3
@@ -14,8 +15,8 @@ typedef enum {
     SCORE_COUNT
 } ScoreType;
 
-static int g_shapeScore[] = { 1, 2, 3 };
-static int g_outcomeScore[] = { 0, 3, 6 };
+static int g_shapeScore[] = {1, 2, 3};
+static int g_outcomeScore[] = {0, 3, 6};
 
 char g_assertMsg[1024];
 int g_testsRun = 0;
@@ -57,8 +58,10 @@ static void calculateScore(FILE *stream, int *score, int *guideScore) {
 
         int player = playerChar - PLAYER_ROCK;
         int outcome = g_outcomeScore[SCORE_LOSS];
-        outcome = player == opponent ? g_outcomeScore[SCORE_DRAW] : outcome; // check draw
-        outcome = player == (opponent + 1) % SHAPE_COUNT ? g_outcomeScore[SCORE_WIN] : outcome;
+        outcome =
+            player == opponent ? g_outcomeScore[SCORE_DRAW] : outcome;  // check draw
+        outcome = player == (opponent + 1) % SHAPE_COUNT ? g_outcomeScore[SCORE_WIN]
+                                                         : outcome;
         *score += g_shapeScore[player] + outcome;
 
         // guided
@@ -79,7 +82,8 @@ static char *testCalculateScoreCase1(void) {
     int score, guideScore;
     calculateScore(tempFile, &score, &guideScore);
     MU_ASSERT_FMT(15 == score, "Expect score (%d) but got (%d)", 15, score);
-    MU_ASSERT_FMT(12 == guideScore, "Expect guided score (%d) but got (%d)", 12, guideScore);
+    MU_ASSERT_FMT(12 == guideScore, "Expect guided score (%d) but got (%d)", 12,
+                  guideScore);
 
     fclose(tempFile);
     MU_PASS;
@@ -94,7 +98,8 @@ static char *testCalculateScoreCase2(void) {
     int score, guideScore;
     calculateScore(tempFile, &score, &guideScore);
     MU_ASSERT_FMT(61 == score, "Expect score (%d) but got (%d)", 61, score);
-    MU_ASSERT_FMT(57 == guideScore, "Expect guided score (%d) but got (%d)", 57, guideScore);
+    MU_ASSERT_FMT(57 == guideScore, "Expect guided score (%d) but got (%d)", 57,
+                  guideScore);
 
     fclose(tempFile);
     MU_PASS;

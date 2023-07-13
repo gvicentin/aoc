@@ -35,7 +35,7 @@
 extern char g_assertMsg[1024];
 extern int g_testsRun;
 
-static inline FILE * muTempFile(const char *filepath, char *content) {
+static inline FILE *muTempFile(const char *filepath, char *content) {
     FILE *tempFile;
 
     tempFile = fopen(filepath, "w+");
