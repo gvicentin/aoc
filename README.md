@@ -17,3 +17,8 @@ make compile
 # find challenge's answer
 ./build/day1 < input/day1.in
 ```
+
+## Fix later
+
+1. Remove `muTempFile` and update day1 and day2 after it.
+2. Better input handling for day5.
