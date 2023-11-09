@@ -1,4 +1,4 @@
-CC        = gcc -std=c11
+CC        = gcc
 CFLAGS    = -Wall -g
 SOURCEDIR = src
 BUILDDIR  = build
