@@ -7,11 +7,13 @@
 #include "minunit.h"
 
 #define MAX_FILENAME       64
-#define MAX_FILENAME_FMT  "63"
+#define MAX_FILENAME_FMT   "63"
 #define MAX_CHILDREN_FILES 32
 #define MAX_CHILDREN_DIRS  32
 
-#define MAX_CALC_SIZE 100000
+#define MAX_CALC_SIZE       100000
+#define MAX_FILESYSTEM_SIZE 70000000
+#define MIN_SPACE_TO_CLEAN  30000000
 
 typedef struct File {
     char name[MAX_FILENAME];
@@ -36,6 +38,8 @@ int g_testsRun = 0;
 
 static Dir *CreateFileSystem(const char *input);
 static int CalculateTotalDirSize(Dir *dir);
+static int calculateDeleteSize(int usedSpace);
+static void FindDeleteSize(Dir *dir, int minDeleteSize, int *deleteSize);
 static void AccumulateSizes(Dir *dir, int *accum);
 
 static char *allTests(void);
@@ -56,7 +60,7 @@ int main(int argc, char *argv[]) {
 
     // read stdin in a big buffer
     char *input = malloc(1000000);
-    int inputSize = fread(input, 1, 1000000, stdin);
+    fread(input, 1, 1000000, stdin);
 
     Dir *root = CreateFileSystem(input);
     int totalSize = 0;
@@ -65,6 +69,12 @@ int main(int argc, char *argv[]) {
     AccumulateSizes(root, &totalSize);
     printf("Total size: %d\n", totalSize);
 
+    int sizeToDelete = MAX_FILESYSTEM_SIZE;
+    int minDeleteSize = calculateDeleteSize(root->totalSize);
+    FindDeleteSize(root, minDeleteSize, &sizeToDelete);
+    printf("Size of dir to delete: %d\n", sizeToDelete);
+
+    free(input);
     return 0;
 }
 
@@ -115,6 +125,11 @@ static int CalculateTotalDirSize(Dir *dir) {
     return dir->totalSize;
 }
 
+static int calculateDeleteSize(int usedSpace) {
+    int unusedSpace = MAX_FILESYSTEM_SIZE - usedSpace;
+    return MIN_SPACE_TO_CLEAN - unusedSpace;
+}
+
 static void AccumulateSizes(Dir *dir, int *accum) {
     for (int i = 0; i < dir->childrenCount; ++i) {
         AccumulateSizes(dir->children[i], accum);
@@ -122,6 +137,16 @@ static void AccumulateSizes(Dir *dir, int *accum) {
 
     if (dir->totalSize < MAX_CALC_SIZE) {
         *accum += dir->totalSize;
+    }
+}
+
+static void FindDeleteSize(Dir *dir, int minDeleteSize, int *deleteSize) {
+    for (int i = 0; i < dir->childrenCount; ++i) {
+        FindDeleteSize(dir->children[i], minDeleteSize, deleteSize);
+    }
+
+    if (dir->totalSize >= minDeleteSize && dir->totalSize < *deleteSize) {
+        *deleteSize = dir->totalSize;
     }
 }
 
@@ -145,12 +170,9 @@ static Dir *CreateFileSystem(const char *input) {
             if (strcmp(token, "cd") == 0) {
                 // change directory
                 token = strtok_r(NULL, " ", &tokenSavePtr);
-                printf("Changing directory to %s\n", token);
                 if (strcmp(token, "/") == 0) {
-                    printf("Changing directory to root\n");
                     currentDir = root;
                 } else if (strcmp(token, "..") == 0) {
-                    printf("Returning one directory\n");
                     currentDir = currentDir->parent;
                 } else {
                     // find directory to change
@@ -161,20 +183,14 @@ static Dir *CreateFileSystem(const char *input) {
                         }
                     }
                     if (aux != NULL) {
-                        printf("Found subdir %s, entering it...\n", token);
                         currentDir = aux;
                     }
                 }
-            } else if (strcmp(token, "ls") == 0) {
-                // listing directory
-                printf("Listing current directory\n");
             } else {
-                printf("Invalid command %s\n", token);
             }
         } else if (strcmp(token, "dir") == 0) {
             // print directory name
             token = strtok_r(NULL, " ", &tokenSavePtr);
-            printf("Found dir with name %s\n", token);
             Dir *newDir = malloc(sizeof(Dir));
             InitDir(newDir, token, currentDir);
             DirAddSubdir(currentDir, newDir);
@@ -182,7 +198,6 @@ static Dir *CreateFileSystem(const char *input) {
             // print filesize and filename
             int filesize = atoi(token);
             char *filename = strtok_r(NULL, " ", &tokenSavePtr);
-            printf("Found file with name %s and size %d\n", filename, filesize);
             DirCreateFile(currentDir, filename, filesize);
         }
     }
@@ -192,7 +207,7 @@ static Dir *CreateFileSystem(const char *input) {
     return root;
 }
 
-static char *allTests(void) {
+static char *testDirSizesAndDeleteDir(void) {
     const char *input =
         "$ cd /\n"
         "$ ls\n"
@@ -218,5 +233,28 @@ static char *allTests(void) {
         "5626152 d.ext\n"
         "7214296 k";
 
+    Dir *root = CreateFileSystem(input);
+    CalculateTotalDirSize(root);
+
+    int totalSize = 0;
+    AccumulateSizes(root, &totalSize);
+    MU_ASSERT_FMT(95437 == totalSize, "[Accumulated sizes] Expect (%d) but got (%d)",
+                  95437, totalSize);
+
+    int spaceToBeDeleted = calculateDeleteSize(root->totalSize);
+    MU_ASSERT_FMT(8381165 == spaceToBeDeleted,
+                  "[Space to be deleted] Expect (%d) but got (%d)", 82381165,
+                  spaceToBeDeleted);
+
+    int sizeToDelete = MAX_FILESYSTEM_SIZE;
+    FindDeleteSize(root, spaceToBeDeleted, &sizeToDelete);
+    MU_ASSERT_FMT(24933642 == sizeToDelete,
+                  "[Size of Dir to delete] Expect (%d) but got (%d)", 24933642,
+                  sizeToDelete);
+    MU_PASS;
+}
+
+static char *allTests(void) {
+    MU_TEST(testDirSizesAndDeleteDir);
     MU_PASS;
 }
