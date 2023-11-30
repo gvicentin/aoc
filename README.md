@@ -23,3 +23,4 @@ make compile
 1. Remove `muTempFile` and update day1 and day2 after it.
 2. Better input handling for day5.
 3. Day 7 cleanup code.
+4. Day 10 is not showing the last column of CRT right
