@@ -8,13 +8,11 @@
 
 typedef enum operation {
     OP_ADD = 0,
-    OP_MIN,
     OP_MUL,
-    OP_DIV
 } OPERATION;
 
 struct monkey {
-    int items[NOITEMS];
+    uint64_t items[NOITEMS];
     int iStart, iEnd;
     OPERATION operation;
     bool isCustomOperand;
@@ -24,6 +22,7 @@ struct monkey {
 };
 
 int compareLevel(const void *a, const void *b);
-void execute_round(struct monkey *ms, uint64_t *inspectedItems, int mCount, int worryDec);
+void execute_round(struct monkey *ms, uint64_t *inspectedItems, 
+                   int mCount, bool worryMore);
 
 #endif  // !SOL_H

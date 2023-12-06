@@ -16,9 +16,9 @@ int main(int argc, char *argv[]) {
         {{79, 58}, 0, 2, OP_ADD, true, 6, 17, 1, 5}};
     uint64_t inspectedItems[8] = {0};
 
-    int i = 20;
+    int i = 10000;
     do {
-        execute_round(ms, inspectedItems, 8);
+        execute_round(ms, inspectedItems, 8, false);
     } while (--i > 0);
 
     qsort(inspectedItems, 8, sizeof(inspectedItems[0]), compareLevel);
