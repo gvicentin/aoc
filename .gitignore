@@ -3,3 +3,7 @@ build/
 
 **/sol
 **/test
+
+.clj-kondo/
+.lsp/
+.cpcache/
