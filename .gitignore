@@ -4,6 +4,7 @@ build/
 **/sol
 **/test
 
+.nrepl-port
 .clj-kondo/
 .lsp/
 .cpcache/
