@@ -91,15 +91,15 @@
             {sr 1}
             ss)))
 
+(def example-input (-> "day07-example.txt"
+                       io/resource
+                       slurp))
+
+(def input (-> "day07.txt"
+               io/resource
+               slurp))
+
 (comment
-  (def example-input (-> "day07-example.txt"
-                         io/resource
-                         slurp))
-
-  (def input (-> "day07.txt"
-                 io/resource
-                 slurp))
-
   (solve-second example-input)
 
   (reduce (fn [acc [_ v]] (+ acc v))
